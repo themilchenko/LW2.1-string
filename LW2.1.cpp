@@ -12,17 +12,17 @@ String::String(const char* str1)
         symbols[i] = str1[i];
 
     symbols[size] = '\0';                             /*в конце ставим нулевой терминатор, как конец строки*/
-    this->length = size;
+    length = size;
 }
 
 /*конструктор копирования*/
 String::String(const String& str)
 {
-    this->length = str.length;
+    length = str.length;
 
     symbols = new char[str.length + 1];
 
-    for (int i = 0; i < this->length; i++)
+    for (int i = 0; i < length; i++)
         symbols[i] = str.symbols[i];
 
     symbols[str.length] = '\0';
@@ -31,35 +31,27 @@ String::String(const String& str)
 /*деструктор*/
 String::~String()
 {
-    delete[] this->symbols;
-    this->length = 0;
+    delete[] symbols;
+    length = 0;
 }
 
 /*оператор присваивания копированием*/
 String& String::operator=(const String& string)
 {
-    if (this->length == string.length)
+    if (this != &string)
     {
-        size_t counter = 0;
-        for (int i = 0; i < string.length; i++)
-            if (string.symbols[i] == this->symbols[i])
-                counter++;
-        if (counter == this->length)
-            return *this;
+        if (symbols != nullptr)
+            delete[] symbols;
+
+        symbols = new char[string.length + 1];
+
+        if (string.symbols != nullptr)
+            for (int i = 0; i < string.length; i++)
+                symbols[i] = string.symbols[i];
+
+        symbols[string.length] = '\0';
+        length = string.length;
     }
-
-    if (this->symbols != nullptr)
-        delete [] symbols;
-
-    this->symbols = new char[string.length + 1];
-
-    if (string.symbols != nullptr)
-        for (int i = 0; i < string.length; i++)
-            this->symbols[i] = string.symbols[i];
-
-    this->symbols[string.length] = '\0';
-    this->length = string.length;
-
     return *this;
 }
 
@@ -68,10 +60,10 @@ bool String::operator==(const String& string)
 {
     int counter = 0;
 
-    if (string.length == this->length)
+    if (string.length == length)
     {
         for (int i = 0; i < string.length; i++)
-            if (this->symbols[i] == string.symbols[i])
+            if (symbols[i] == string.symbols[i])
                 counter++;
 
         if (counter == string.length)
@@ -96,7 +88,7 @@ int String::get_size(char* string)
 
 int String::get_length()
 {
-    return this->length;
+    return length;
 }
 
 /*функция поиска подстроки*/
@@ -106,30 +98,38 @@ int String::find(const String& string)
         return -1;
     else
     {
-        size_t counter = 0;
         size_t pos = 0;
-        size_t i = 0;
 
-        for (int j = 0; j < this->length; j++)    
-        {    
-            if (this->symbols[j] == string.symbols[i] && i == 0)
+        for (int j = 0; j < length; j++)    
+        {
+            char* current = new char[string.length + 1];
+
+            int count = 0;
+            pos = j;
+
+            if (string.length > length - j)
+                return -1;
+            else
             {
-                pos = j;
-                i++;
+                int count = j;
+                for (int i = 0; i < string.length; i++)
+                {
+                    current[i] = symbols[count];
+                    count++;
+                }
+                current[string.length] = '\0';
+            }
 
-                if (string.length == 1)
-                    return pos;
-                else
-                    continue;
-            }    
+            int counter = 0;
 
-            if (this->symbols[j] == string.symbols[i])
-                i++;
-            else   
-                i = 0;
+            for (int i = 0; i < string.length; i++)
+                if (current[i] == string.symbols[i])
+                    counter++;
 
-            if (i == string.length)    
-                return pos;    
+            delete[] current;
+
+            if (counter == string.length)
+                return pos;
         }    
         return -1;
     }
@@ -138,7 +138,7 @@ int String::find(const String& string)
 /*функция замены одного символа на другой*/
 void String::replace(char a, char b)
 {
-    for (int i = 0; i < this->length; i++)
+    for (int i = 0; i < length; i++)
         if (symbols[i] == a)
             symbols[i] = b;
 }
@@ -154,16 +154,16 @@ String& String::operator+(const String& str)
 {
 
     String* result = new String;
-    result->symbols = new char[this->length + str.length + 1];
+    result->symbols = new char[length + str.length + 1];
 
-    for (int i = 0; i < this->length; i++)
+    for (int i = 0; i < length; i++)
         result->symbols[i] = symbols[i];
 
     for (int i = 0; i < str.length; i++)
-        result->symbols[this->length + i] = str.symbols[i];
+        result->symbols[length + i] = str.symbols[i];
 
-    result->symbols[this->length + str.length] = '\0';
-    result->length = this->length + str.length;
+    result->symbols[length + str.length] = '\0';
+    result->length = length + str.length;
 
     return *result;
 }
@@ -185,12 +185,12 @@ std::istream& operator>>(std::istream& input, String& str)
     int begin = 0;
     char a;
 
-    while (current[begin - 1] != '\n')
+    do
     {
         input.get(a);
         current[begin] = a;
         begin++;
-    }
+    } while (current[begin - 1] != '\n');
 
     current[begin - 1] = '\0';
 
