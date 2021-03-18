@@ -99,10 +99,10 @@ int String::find(const String& string)
     else
     {
         size_t pos = 0;
+        size_t counter = 0;
 
         for (int j = 0; j < length; j++)    
         {
-            char* current = new char[string.length + 1];
 
             int count = 0;
             pos = j;
@@ -111,25 +111,20 @@ int String::find(const String& string)
                 return -1;
             else
             {
-                int count = j;
+                size_t count = j;
                 for (int i = 0; i < string.length; i++)
                 {
-                    current[i] = symbols[count];
+                    if (symbols[count] == string.symbols[i])
+                        counter++;
                     count++;
                 }
-                current[string.length] = '\0';
+                    
             }
-
-            int counter = 0;
-
-            for (int i = 0; i < string.length; i++)
-                if (current[i] == string.symbols[i])
-                    counter++;
-
-            delete[] current;
 
             if (counter == string.length)
                 return pos;
+
+            counter = 0;
         }    
         return -1;
     }
